@@ -8,7 +8,7 @@ class Program
 {
     static void Main()
     {
-        List<FinancialTransaction> transactions = new FileReader("input.txt").GetTransactions();
+        List<string> transactions = new FileReader("input.txt").GetTransactions();
 
         TransactionsHandler transactionsHandler = new(transactions);
         transactionsHandler.Handle();

@@ -9,9 +9,9 @@ public class FileReader(string fileName)
 {
     private string _fileName = fileName;
 
-    public List<FinancialTransaction> GetTransactions()
+    public List<string> GetTransactions()
     {
-        List<FinancialTransaction> transactions = [];
+       List<string> transactions = [];
 
         try
         {
@@ -22,12 +22,11 @@ public class FileReader(string fileName)
                 {
                     try
                     {   
-                        FinancialTransaction transaction = ParseTransactionLine(line);
-                        transactions.Add(transaction);
+                        transactions.Add(line);
                     }
-                    catch (FormatException)
+                    catch (FormatException e)
                     {
-                        // Console.WriteLine($"{line} ignored");
+                        Console.WriteLine($"Error reading file: {e.Message}");
                     }
                 }
             }
@@ -39,15 +38,5 @@ public class FileReader(string fileName)
         }
 
         return transactions;
-    }
-
-    public static FinancialTransaction ParseTransactionLine(string line)
-    {
-        string[] splitedLine = line.Split(' ');
-        DateTime createdAt = DateTime.ParseExact(splitedLine[0], "yyyy-MM-dd", CultureInfo.InvariantCulture);
-        string size = splitedLine[1];
-        string provider = splitedLine[2];
-
-        return new FinancialTransaction(createdAt, size, provider);
     }
 }

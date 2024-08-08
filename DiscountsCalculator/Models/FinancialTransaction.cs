@@ -1,8 +1,8 @@
 namespace DiscountsCalculator.Models;
 
-public class FinancialTransaction(DateTime createdAt, string size, string provider)
+public class FinancialTransaction(string createdAt, string size, string provider)
 {
-    private DateTime _createdAt = createdAt;
+    private string _createdAt = createdAt;
     private string _size = size;
     private string _provider = provider;
 
@@ -10,7 +10,7 @@ public class FinancialTransaction(DateTime createdAt, string size, string provid
 
     private decimal _discount = 0;
 
-    public DateTime CreatedAt
+    public string CreatedAt
     {
         get => _createdAt;
     }

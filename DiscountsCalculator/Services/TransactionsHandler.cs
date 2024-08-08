@@ -3,8 +3,9 @@ namespace DiscountsCalculator.Services;
 using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Rules;
+using System.Globalization;
 
-public class TransactionsHandler(List<FinancialTransaction> transactions)
+public class TransactionsHandler(List<string> transactions)
 {
     public void Handle()
     {
@@ -14,50 +15,55 @@ public class TransactionsHandler(List<FinancialTransaction> transactions)
         DateTime lastFreeShipmenDate = DateTime.MinValue;
         bool freeShipmentAppliedThisMonth = false;
 
-        SetTransactionPrice(transactions);
+        // SetTransactionPrice(transactions);
 
-        foreach (var transaction in transactions)
+        foreach (var transactionString in transactions)
         {
-            MatchSmallestSizePrices MatchSmallestSizePrices = new(transaction);
-            MatchSmallestSizePrices.CalculateDiscount();
+            ValidateData validateData = new(transactionString);
+            FinancialTransaction transaction = validateData.Validate();
 
-            if((transaction.Provider == "LP") && (transaction.Size == "L") && !freeShipmentAppliedThisMonth)
+            if(transaction != null){
+                DateTime createdAt = DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                MatchSmallestSizePrices MatchSmallestSizePrices = new(transaction);
+                MatchSmallestSizePrices.CalculateDiscount();
+
+                if((transaction.Provider == "LP") && (transaction.Size == "L") && !freeShipmentAppliedThisMonth)
+                {
+                    counter++;
+                }
+
+                ThirdFreeShipment ThirdFreeShipment = new(transaction, counter);
+                ThirdFreeShipment.CalculateDiscount();
+
+                if(counter == 3)
+                {
+                    counter = 0;
+                    freeShipmentAppliedThisMonth = true;
+                }
+
+                if(createdAt.Month != lastFreeShipmenDate.Month)
+                {
+                    monthlyDiscountSum = 0;
+                    lastFreeShipmenDate = createdAt;
+                    freeShipmentAppliedThisMonth = false;
+                }
+
+                monthlyDiscountSum += transaction.Discount;
+
+                if(monthlyLimitReached == 0)
+                {
+                    MonthlyDiscountLimit monthlyDiscountLimit = new(transaction, monthlyDiscountSum);
+                    monthlyLimitReached =  monthlyDiscountLimit.CalculateDiscount();
+                }
+
+                Console.WriteLine($"{transaction.CreatedAt:yyyy-MM-dd} {transaction.Size} {transaction.Provider} {transaction.Price:0.00} {(transaction.Discount == 0 ? "-" : transaction.Discount.ToString("0.00"))}");
+            } 
+            else
             {
-                counter++;
+                Console.WriteLine($"{transactionString} ignored");
             }
-
-            ThirdFreeShipment ThirdFreeShipment = new(transaction, counter);
-            ThirdFreeShipment.CalculateDiscount();
-
-            if(counter == 3)
-            {
-                counter = 0;
-                freeShipmentAppliedThisMonth = true;
-            }
-
-            if(transaction.CreatedAt.Month != lastFreeShipmenDate.Month)
-            {
-                // Console.WriteLine($"Monthly Discount Sum: {monthlyDiscountSum:0.00}");
-                monthlyDiscountSum = 0;
-                lastFreeShipmenDate = transaction.CreatedAt;
-                freeShipmentAppliedThisMonth = false;
-            }
-
-            monthlyDiscountSum += transaction.Discount;
-
-            if(monthlyLimitReached == 0)
-            {
-                MonthlyDiscountLimit monthlyDiscountLimit = new(transaction, monthlyDiscountSum);
-                monthlyLimitReached =  monthlyDiscountLimit.CalculateDiscount();
-            }
-
-            Console.WriteLine($"{transaction.CreatedAt:yyyy-MM-dd} {transaction.Size} {transaction.Provider} {transaction.Price:0.00} {(transaction.Discount == 0 ? "-" : transaction.Discount.ToString("0.00"))}");
         }
-
-        // if (monthlyDiscountSum > 0)
-        // {
-        //     Console.WriteLine($"Monthly Discount Sum: {monthlyDiscountSum:0.00}");
-        // }
     }
 
     private static void SetTransactionPrice(List<FinancialTransaction> transactions){
