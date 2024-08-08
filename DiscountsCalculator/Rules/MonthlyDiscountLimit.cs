@@ -2,15 +2,15 @@ namespace DiscountsCalculator.Rules;
 
 using DiscountsCalculator.Models;
 
-// Accumulated discounts cannot exceed 10 € in a calendar month. If there are not enough funds to fully 
-// cover a discount this calendar month, it should be covered partially.
 public class MonthlyDiscountLimit(FinancialTransaction transaction, decimal monthlyDiscountSum)
 {
+    private const int MonthLimit = 10;
+
     public decimal CalculateDiscount()
     {
-        if(Check())
+        if (Check())
         {
-            transaction.Discount = transaction.Discount - monthlyDiscountSum + 10;
+            transaction.Discount = transaction.Discount - monthlyDiscountSum + MonthLimit;
 
             return transaction.Discount;
         }
@@ -20,6 +20,6 @@ public class MonthlyDiscountLimit(FinancialTransaction transaction, decimal mont
 
     private bool Check()
     {
-        return monthlyDiscountSum > 10;
+        return monthlyDiscountSum > MonthLimit;
     }
 }

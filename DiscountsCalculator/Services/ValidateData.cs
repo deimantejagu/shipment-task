@@ -7,7 +7,8 @@ public class ValidateData(string transaction)
 {
     private FinancialTransaction _transaction;
 
-    public FinancialTransaction Validate(){
+    public FinancialTransaction Validate()
+    {
         try
         {   
             _transaction = ParseTransactionLine(transaction);
@@ -17,7 +18,8 @@ public class ValidateData(string transaction)
             return null;
         }
 
-        if(IsTransactionValid(_transaction)){
+        if (IsTransactionValid(_transaction))
+        {
 
             return _transaction;
         }
@@ -35,10 +37,11 @@ public class ValidateData(string transaction)
         return new FinancialTransaction(createdAt, size, provider);
     }
 
-    private bool IsTransactionValid(FinancialTransaction transaction){
-        foreach(var provider in ProvidersData.Providers)
+    private bool IsTransactionValid(FinancialTransaction transaction)
+    {
+        foreach (ProviderInformation provider in ProvidersData.Providers)
         {
-            if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
+            if ((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
             {
                 return true;
             }

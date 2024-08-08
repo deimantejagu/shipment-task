@@ -1,29 +1,20 @@
 namespace DiscountsCalculator.Rules;
 
-using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
+using DiscountsCalculator.Services;
 
-// The third L shipment via LP should be free, but only once a calendar month.
 public class ThirdFreeShipment(FinancialTransaction transaction, int counter)
 {
     public decimal CalculateDiscount()
     {
-        decimal providersPrice = 0;
+        decimal providersPrice = PriceFinder.Find(transaction);
 
-        foreach (var provider in ProvidersData.Providers)
-        {
-            if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
-            {
-                providersPrice = provider.Price;
-            }
-        }
-
-        if(Check())
+        if (Check())
         {
             transaction.Price = 0;
             transaction.Discount = providersPrice;
         }
-        else if((transaction.Provider == "LP") && (transaction.Size == "L"))
+        else if ((transaction.Provider == "LP") && (transaction.Size == "L"))
         {
             transaction.Price = providersPrice;
         }

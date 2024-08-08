@@ -1,50 +1,49 @@
 namespace DiscountsCalculator.Services;
 
-using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Rules;
-using System.Diagnostics.Tracing;
 using System.Globalization;
-using System.Net.Http.Headers;
 
 public class TransactionsHandler(List<string> transactions)
 {
+    private const int FreeShipping = 3;
+
     public void Handle()
     {
-        int counter = 0;
+        int transactionsCounter = 0;
         decimal monthlyDiscountSum = 0;
         decimal monthlyLimitReached = 0;
         DateTime lastFreeShipmenDate = DateTime.MinValue;
         bool freeShipmentAppliedThisMonth = false;
 
-        foreach (var transactionString in transactions)
+        foreach (string transactionString in transactions)
         {
             ValidateData validateData = new(transactionString);
             FinancialTransaction transaction = validateData.Validate();
 
-            if(transaction != null){
-                SetTransactionPrice(transaction);
+            if (transaction != null){
+                transaction.Price = PriceFinder.Find(transaction);
 
                 DateTime createdAt = ConvertStringIntoDateTime(transaction);
 
                 MatchSmallestSizePrices MatchSmallestSizePrices = new(transaction);
                 MatchSmallestSizePrices.CalculateDiscount();
 
-                if((transaction.Provider == "LP") && (transaction.Size == "L") && !freeShipmentAppliedThisMonth)
+                if ((transaction.Provider == "LP") && (transaction.Size == "L") && !freeShipmentAppliedThisMonth)
                 {
-                    counter++;
+                    transactionsCounter++;
                 }
 
-                ThirdFreeShipment ThirdFreeShipment = new(transaction, counter);
+                ThirdFreeShipment ThirdFreeShipment = new(transaction, transactionsCounter);
                 ThirdFreeShipment.CalculateDiscount();
 
-                if(counter == 3)
+                if (transactionsCounter == FreeShipping)
                 {
-                    counter = 0;
+                    transactionsCounter = 0;
                     freeShipmentAppliedThisMonth = true;
                 }
 
-                if(createdAt.Month != lastFreeShipmenDate.Month)
+                if (createdAt.Month != lastFreeShipmenDate.Month)
                 {
                     monthlyDiscountSum = 0;
                     lastFreeShipmenDate = createdAt;
@@ -53,7 +52,7 @@ public class TransactionsHandler(List<string> transactions)
 
                 monthlyDiscountSum += transaction.Discount;
 
-                if(monthlyLimitReached == 0)
+                if (monthlyLimitReached == 0)
                 {
                     MonthlyDiscountLimit monthlyDiscountLimit = new(transaction, monthlyDiscountSum);
                     monthlyLimitReached =  monthlyDiscountLimit.CalculateDiscount();
@@ -68,20 +67,11 @@ public class TransactionsHandler(List<string> transactions)
         }
     }
 
-    private void SetTransactionPrice(FinancialTransaction transaction){
-        foreach(var provider in ProvidersData.Providers)
-        {
-            if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
-            {
-                transaction.Price = provider.Price;
-            }
-        }
-    }
-
-    private DateTime ConvertStringIntoDateTime(FinancialTransaction transaction){
+    private DateTime ConvertStringIntoDateTime(FinancialTransaction transaction)
+    {
         try 
         {
-         return DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         } 
         catch 
         {
