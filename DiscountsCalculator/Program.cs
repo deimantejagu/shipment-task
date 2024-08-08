@@ -1,8 +1,6 @@
 ﻿namespace DiscountsCalculator;
 
 using DiscountsCalculator.Services;
-using DiscountsCalculator.Models;
-
 
 class Program
 {

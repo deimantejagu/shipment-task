@@ -7,16 +7,14 @@ public class ThirdFreeShipment(FinancialTransaction transaction, int counter)
 {
     public decimal CalculateDiscount()
     {
-        decimal providersPrice = PriceFinder.Find(transaction);
-
         if (Check())
         {
+            transaction.Discount = transaction.Price;
             transaction.Price = 0;
-            transaction.Discount = providersPrice;
         }
         else if ((transaction.Provider == "LP") && (transaction.Size == "L"))
         {
-            transaction.Price = providersPrice;
+            transaction.Price = transaction.Price;
         }
 
         return transaction.Discount;

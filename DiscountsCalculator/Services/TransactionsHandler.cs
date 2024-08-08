@@ -1,5 +1,6 @@
 namespace DiscountsCalculator.Services;
 
+using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Rules;
 using System.Globalization;
@@ -22,7 +23,7 @@ public class TransactionsHandler(List<string> transactions)
             FinancialTransaction? transaction = validateData.Validate();
 
             if (transaction != null){
-                transaction.Price = PriceFinder.Find(transaction);
+                transaction.Price = SetInitialPrice(transaction);
 
                 DateTime createdAt = ConvertStringIntoDateTime(transaction);
 
@@ -73,9 +74,21 @@ public class TransactionsHandler(List<string> transactions)
         {
             return DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         } 
-        catch 
+        catch
         {
             throw;
         }
+    }
+
+    private decimal SetInitialPrice(FinancialTransaction transaction){
+        foreach (ProviderInformation provider in ProvidersData.Providers)
+        {
+            if ((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
+            {
+                return provider.Price;
+            }
+        }
+
+        return 0;
     }
 }

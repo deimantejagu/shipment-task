@@ -12,8 +12,8 @@ public class MatchSmallestSizePrices(FinancialTransaction transaction)
     {
         if (Check())
         {
+            transaction.Discount = transaction.Price - _minPrice;
             transaction.Price = _minPrice;
-            transaction.Discount = PriceFinder.Find(transaction) - _minPrice;
         }
 
         return transaction.Discount;
