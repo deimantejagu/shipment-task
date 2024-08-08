@@ -1,5 +1,6 @@
 namespace DiscountsCalculator.Services;
 
+using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Rules;
 
@@ -9,13 +10,14 @@ public class TransactionsHandler(List<FinancialTransaction> transactions)
     {
         int counter = 0;
         decimal monthlyDiscountSum = 0;
+        decimal monthlyLimitReached = 0;
         DateTime lastFreeShipmenDate = DateTime.MinValue;
         bool freeShipmentAppliedThisMonth = false;
 
+        SetTransactionPrice(transactions);
+
         foreach (var transaction in transactions)
         {
-            InitialTransactionPrice.SetTransactionPrice(transaction);
-
             MatchSmallestSizePrices MatchSmallestSizePrices = new(transaction);
             MatchSmallestSizePrices.CalculateDiscount();
 
@@ -35,7 +37,7 @@ public class TransactionsHandler(List<FinancialTransaction> transactions)
 
             if(transaction.CreatedAt.Month != lastFreeShipmenDate.Month)
             {
-                Console.WriteLine($"Monthly Discount Sum: {monthlyDiscountSum:0.00}");
+                // Console.WriteLine($"Monthly Discount Sum: {monthlyDiscountSum:0.00}");
                 monthlyDiscountSum = 0;
                 lastFreeShipmenDate = transaction.CreatedAt;
                 freeShipmentAppliedThisMonth = false;
@@ -43,16 +45,31 @@ public class TransactionsHandler(List<FinancialTransaction> transactions)
 
             monthlyDiscountSum += transaction.Discount;
 
-            MonthlyDiscountLimit monthlyDiscountLimit = new(transaction, monthlyDiscountSum);
-            monthlyDiscountLimit.CalculateDiscount();
+            if(monthlyLimitReached == 0)
+            {
+                MonthlyDiscountLimit monthlyDiscountLimit = new(transaction, monthlyDiscountSum);
+                monthlyLimitReached =  monthlyDiscountLimit.CalculateDiscount();
+            }
 
             Console.WriteLine($"{transaction.CreatedAt:yyyy-MM-dd} {transaction.Size} {transaction.Provider} {transaction.Price:0.00} {(transaction.Discount == 0 ? "-" : transaction.Discount.ToString("0.00"))}");
-
         }
 
-        if (monthlyDiscountSum > 0)
+        // if (monthlyDiscountSum > 0)
+        // {
+        //     Console.WriteLine($"Monthly Discount Sum: {monthlyDiscountSum:0.00}");
+        // }
+    }
+
+    private static void SetTransactionPrice(List<FinancialTransaction> transactions){
+        foreach (var transaction in transactions)
         {
-            Console.WriteLine($"Monthly Discount Sum: {monthlyDiscountSum:0.00}");
+            foreach(var provider in ProvidersData.Providers)
+            {
+                if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
+                {
+                    transaction.Price = provider.Price;
+                }
+            }
         }
     }
 }

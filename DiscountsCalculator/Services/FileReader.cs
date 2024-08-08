@@ -27,7 +27,7 @@ public class FileReader(string fileName)
                     }
                     catch (FormatException)
                     {
-                        Console.WriteLine($"{line} ignored");
+                        // Console.WriteLine($"{line} ignored");
                     }
                 }
             }

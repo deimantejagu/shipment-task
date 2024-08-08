@@ -12,12 +12,21 @@ using DiscountsCalculator.Models;
 // Jei yra virsijamas limitas kitoms prekems nuolaidos netaikomos
 public class MonthlyDiscountLimit(FinancialTransaction transaction, decimal monthlyDiscountSum)
 {
-    public void CalculateDiscount()
+    public decimal CalculateDiscount()
     {
         if(Check())
         {
-            // Console.WriteLine($"Pasiektas limitas: {monthlyDiscountSum - 10}");
+            // Console.WriteLine($"Dalinai dengia: {transaction.Discount - monthlyDiscountSum + 10}");
+            transaction.Discount = transaction.Discount - monthlyDiscountSum + 10;
+
+            return transaction.Discount;
         }
+        // else 
+        // {
+        //     Console.WriteLine("Limitas nepasiektas");
+        // }
+
+        return 0;
     }
 
     private bool Check()

@@ -19,7 +19,7 @@ public class MatchSmallestSizePrices(FinancialTransaction transaction)
 
             foreach (var provider in ProvidersData.Providers)
             {
-                if(provider.Size == transaction.Size)
+                if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
                 {
                     providersPrice = provider.Price;
                 }
