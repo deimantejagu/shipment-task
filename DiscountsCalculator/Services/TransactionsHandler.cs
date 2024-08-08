@@ -3,7 +3,9 @@ namespace DiscountsCalculator.Services;
 using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Rules;
+using System.Diagnostics.Tracing;
 using System.Globalization;
+using System.Net.Http.Headers;
 
 public class TransactionsHandler(List<string> transactions)
 {
@@ -15,15 +17,15 @@ public class TransactionsHandler(List<string> transactions)
         DateTime lastFreeShipmenDate = DateTime.MinValue;
         bool freeShipmentAppliedThisMonth = false;
 
-        // SetTransactionPrice(transactions);
-
         foreach (var transactionString in transactions)
         {
             ValidateData validateData = new(transactionString);
             FinancialTransaction transaction = validateData.Validate();
 
             if(transaction != null){
-                DateTime createdAt = DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                SetTransactionPrice(transaction);
+
+                DateTime createdAt = ConvertStringIntoDateTime(transaction);
 
                 MatchSmallestSizePrices MatchSmallestSizePrices = new(transaction);
                 MatchSmallestSizePrices.CalculateDiscount();
@@ -66,16 +68,24 @@ public class TransactionsHandler(List<string> transactions)
         }
     }
 
-    private static void SetTransactionPrice(List<FinancialTransaction> transactions){
-        foreach (var transaction in transactions)
+    private void SetTransactionPrice(FinancialTransaction transaction){
+        foreach(var provider in ProvidersData.Providers)
         {
-            foreach(var provider in ProvidersData.Providers)
+            if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
             {
-                if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
-                {
-                    transaction.Price = provider.Price;
-                }
+                transaction.Price = provider.Price;
             }
+        }
+    }
+
+    private DateTime ConvertStringIntoDateTime(FinancialTransaction transaction){
+        try 
+        {
+         return DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        } 
+        catch 
+        {
+            throw;
         }
     }
 }

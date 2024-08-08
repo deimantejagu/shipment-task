@@ -1,9 +1,7 @@
 namespace DiscountsCalculator.Services;
 
 using System;
-using System.Globalization;
 using System.IO;
-using DiscountsCalculator.Models;
 
 public class FileReader(string fileName)
 {

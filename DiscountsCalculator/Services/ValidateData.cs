@@ -1,7 +1,7 @@
 namespace DiscountsCalculator.Services;
 
 using DiscountsCalculator.Models;
-using Microsoft.VisualBasic;
+using DiscountsCalculator.Configs;
 
 public class ValidateData(string transaction)
 {
@@ -17,16 +17,33 @@ public class ValidateData(string transaction)
             return null;
         }
 
-        return _transaction;
+        if(IsTransactionValid(_transaction)){
+
+            return _transaction;
+        }
+
+        return null;
     }
 
-    private FinancialTransaction ParseTransactionLine(string line)
+    private FinancialTransaction ParseTransactionLine(string transaction)
     {
-        string[] splitedLine = line.Split(' ');
+        string[] splitedLine = transaction.Split(' ');
         string createdAt = splitedLine[0];
         string size = splitedLine[1];
         string provider = splitedLine[2];
 
         return new FinancialTransaction(createdAt, size, provider);
+    }
+
+    private bool IsTransactionValid(FinancialTransaction transaction){
+        foreach(var provider in ProvidersData.Providers)
+        {
+            if((provider.Provider == transaction.Provider) && (provider.Size == transaction.Size))
+            {
+                return true;
+            }
+        }
+
+        return  false;
     }
 }

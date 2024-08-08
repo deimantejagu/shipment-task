@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace DiscountsCalculator.Models;
 
 public class ProviderInformation(string provider, string size, decimal price)

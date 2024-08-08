@@ -1,6 +1,5 @@
 using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
-using DiscountsCalculator.Services;
 
 namespace DiscountsCalculator.Rules;
 
