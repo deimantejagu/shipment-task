@@ -19,7 +19,7 @@ public class TransactionsHandler(List<string> transactions)
         foreach (string transactionString in transactions)
         {
             ValidateData validateData = new(transactionString);
-            FinancialTransaction transaction = validateData.Validate();
+            FinancialTransaction? transaction = validateData.Validate();
 
             if (transaction != null){
                 transaction.Price = PriceFinder.Find(transaction);

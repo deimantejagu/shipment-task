@@ -5,23 +5,23 @@ using DiscountsCalculator.Configs;
 
 public class ValidateData(string transaction)
 {
-    private FinancialTransaction _transaction;
+    private FinancialTransaction? _transaction;
 
-    public FinancialTransaction Validate()
+    public FinancialTransaction? Validate()
     {
         try
         {   
             _transaction = ParseTransactionLine(transaction);
+
+            if (IsTransactionValid(_transaction))
+            {
+
+                return _transaction;
+            }
         }
         catch
         {
             return null;
-        }
-
-        if (IsTransactionValid(_transaction))
-        {
-
-            return _transaction;
         }
 
         return null;
