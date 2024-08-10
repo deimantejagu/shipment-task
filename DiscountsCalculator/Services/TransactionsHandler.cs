@@ -32,7 +32,7 @@ public class TransactionsHandler(List<string> transactions)
             }
             else
             {
-                Console.WriteLine($"{transactionString} ignored");
+                Console.WriteLine($"{transactionString} Ignored");
             }
         }
     }

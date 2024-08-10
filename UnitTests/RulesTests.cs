@@ -9,7 +9,7 @@ using DiscountsCalculator.Rules;
 public class RulesTests
 {
     [Fact]
-    public void ApplyDiscount_SizeS_SetsPriceToLowest()
+    public void MatchSmallestSizePricesRule_AppliesDiscount_WhenSizeS_SetsPriceToDiscountedValue()
     {
         // Arrange
         FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "S", "MR") { Price = 10m };
@@ -24,7 +24,7 @@ public class RulesTests
     }
 
     [Fact]
-    public void ApplyDiscount_SetFreeShipping()
+    public void ThirdFreeShipmentRule_AppliesDiscount_ForThirdTransaction()
     {
         // Arrange
         List<FinancialTransaction> completedTransactions = [
@@ -45,7 +45,7 @@ public class RulesTests
     }
 
     [Fact]
-    public void ApplyDiscount_NoFreeShipment()
+    public void ThirdFreeShipmentRule_DoesNotApplyDiscount_ForMoreThanThreeTransactions()
     {
         // Arrange
         List<FinancialTransaction> completedTransactions = [
@@ -66,27 +66,7 @@ public class RulesTests
     }
 
     [Fact]
-    public void ApplyDiscount_DiscountExceedsLimit()
-    {
-        // Arrange
-        List<FinancialTransaction> completedTransactions = [
-            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
-            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
-            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
-        ];
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
-
-        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
-
-        // Act
-        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
-
-        // Assert
-        Assert.Equal(0.1m, result.Discount);  
-    }
-
-    [Fact]
-    public void ApplyDiscount_FreeShipping_RandomDataIsInTheMiddleOfList()
+    public void ThirdFreeShipmentRule_AppliesDiscount_DespiteIrrelevantTransaction()
     {
         // Arrange
         List<FinancialTransaction> completedTransactions = [
@@ -108,28 +88,7 @@ public class RulesTests
     }
 
     [Fact]
-    public void ApplyDiscount_MonthLimit_RandomDataIsInTheMiddleOfList()
-    {
-        // Arrange
-        List<FinancialTransaction> completedTransactions = [
-            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
-            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
-            new FinancialTransaction("2021-01-01", "S", "MR") { Discount = 2m },
-            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
-        ];
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
-
-        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
-
-        // Act
-        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
-
-        // Assert
-        Assert.Equal(0.1m, result.Discount);
-    }
-
-    [Fact]
-    public void ApplyDiscount_FreeShipping_SameMonthButDifferentYear()
+    public void ThirdFreeShipmentRule_DoesNotApplyDiscount_AcrossDifferentYears()
     {
         // Arrange
         List<FinancialTransaction> completedTransactions = [
@@ -150,7 +109,48 @@ public class RulesTests
     }
 
     [Fact]
-    public void ApplyDiscount_MonthLimit_SameMonthButDifferentYear()
+    public void MonthlyDiscountLimitRule_CapsDiscount_WhenTotalExceedsLimit()
+    {
+        // Arrange
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
+        ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
+
+        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
+
+        // Act
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
+
+        // Assert
+        Assert.Equal(0.1m, result.Discount);  
+    }
+
+    [Fact]
+    public void MonthlyDiscountLimitRule_AppliesDiscount_DespiteIrrelevantTransaction()
+    {
+        // Arrange
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
+            new FinancialTransaction("2021-01-01", "S", "MR") { Discount = 2m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
+        ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
+
+        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
+
+        // Act
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
+
+        // Assert
+        Assert.Equal(0.1m, result.Discount);
+    }
+
+    [Fact]
+    public void MonthlyDiscountLimitRule_ResetsLimit_ForNewYear()
     {
         // Arrange
         List<FinancialTransaction> completedTransactions = [

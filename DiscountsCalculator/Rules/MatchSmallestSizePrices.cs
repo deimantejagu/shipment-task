@@ -5,14 +5,14 @@ namespace DiscountsCalculator.Rules;
 
 public class MatchSmallestSizePrices()
 {
-    private decimal _minPrice = FindLowestProvidersPrice();
-
     public FinancialTransaction Apply(FinancialTransaction transaction)
     {
         if (Check(transaction))
         {
-            transaction.Discount = transaction.Price - _minPrice;
-            transaction.Price = _minPrice;
+            decimal minPrice = FindLowestProvidersPrice();
+
+            transaction.Discount = transaction.Price - minPrice;
+            transaction.Price = minPrice;
         }
 
         return transaction;
