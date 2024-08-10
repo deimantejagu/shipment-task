@@ -15,6 +15,6 @@ public class FinancialTransaction
         CreatedAt = createdAt;
         Size = size;
         Provider = provider;
-        Price = PriceSetter.SetInitialPrice(this);
+        Price = PriceSetter.Set(this);
     }
 }

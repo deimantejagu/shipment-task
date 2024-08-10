@@ -16,8 +16,6 @@ public class TransactionsHandler(List<string> transactions)
 
             if (transaction != null)
             {
-                transaction.Price = PriceSetter.SetInitialPrice(transaction);
-
                 MatchSmallestSizePrices matchSmallestSizePrices = new();
                 ThirdFreeShipment thirdFreeShipment = new();
                 MonthlyDiscountLimit monthlyDiscountLimit = new();

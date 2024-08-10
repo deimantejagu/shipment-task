@@ -5,6 +5,8 @@ using DiscountsCalculator.Services;
 
 public class ThirdFreeShipment()
 {
+    private const int FreeTransactionAfterCount = 3;
+
     public FinancialTransaction Apply(FinancialTransaction transaction, List<FinancialTransaction> completedTransactions)
     {
         if (Check(transaction, completedTransactions))
@@ -32,6 +34,6 @@ public class ThirdFreeShipment()
                 StringIntoDateTimeConverter.Convert(t) < createdAt)
             .ToList();
 
-        return previousTransactions.Count == 2;
+        return previousTransactions.Count == FreeTransactionAfterCount - 1;
     }
 }
