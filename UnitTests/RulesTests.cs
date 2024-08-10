@@ -1,6 +1,5 @@
 namespace UnitTests;
 
-using System;
 using Xunit;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Services;
@@ -13,62 +12,75 @@ public class RulesTests
     public void CalculateDiscount_SizeS_SetsPriceToLowest()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "S", "MR") { Price = 10 };
-
-        MatchSmallestSizePrices rule = new MatchSmallestSizePrices(transaction);
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "S", "MR") { Price = 10m };
+        MatchSmallestSizePrices rule = new MatchSmallestSizePrices();
 
         // Act
-        decimal discount = rule.CalculateDiscount();
+        FinancialTransaction result = rule.Apply(transaction);
 
         // Assert
-        Assert.Equal(0.5m, discount);
-        Assert.Equal(1.50m, transaction.Price);
+        Assert.Equal(8.5m, result.Discount);
+        Assert.Equal(1.50m, result.Price);
     }
 
     [Fact]
-    public void CalculateDiscount_SetFreeShipment()
+    public void CalculateDiscount_SetFreeShipping()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "L", "LP") { Price = 10 };
-        int counter = 3;
-        ThirdFreeShipment rule = new ThirdFreeShipment(transaction, counter);
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m };
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Price = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Price = 6.90m },
+        ];
+
+        ThirdFreeShipment rule = new ThirdFreeShipment();
 
         // Act
-        decimal discount = rule.CalculateDiscount();
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
 
         // Assert
-        Assert.Equal(6.90m, discount); 
-        Assert.Equal(0m, transaction.Price); 
+        Assert.Equal(6.90m, result.Discount); 
+        Assert.Equal(0m, result.Price); 
     }
 
     [Fact]
     public void CalculateDiscount_NoFreeShipment()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "L", "LP") { Price = 10 };
-        int counter = 1;
-        ThirdFreeShipment rule = new ThirdFreeShipment(transaction, counter);
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "L", "LP") { Price = 6.90m };
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Price = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Price = 6.90m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m },
+        ];
+
+        ThirdFreeShipment rule = new ThirdFreeShipment();
 
         // Act
-        decimal discount = rule.CalculateDiscount();
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
 
         // Assert
-        Assert.Equal(0m, discount); 
-        Assert.Equal(6.90m, transaction.Price); 
+        Assert.Equal(0m, result.Discount); 
+        Assert.Equal(6.90m, result.Price); 
     }
 
     [Fact]
     public void CalculateDiscount_DiscountExceedsLimit()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 0.5m };
-        decimal monthlyDiscountSum = 10.4m;
-        MonthlyDiscountLimit rule = new MonthlyDiscountLimit(transaction, monthlyDiscountSum);
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
+        ];
+
+        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
 
         // Act
-        decimal discount = rule.CalculateDiscount();
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
 
         // Assert
-        Assert.Equal(0.1m, discount);  
+        Assert.Equal(0.1m, result.Discount);  
     }
 }
