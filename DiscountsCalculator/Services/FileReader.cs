@@ -1,8 +1,5 @@
 namespace DiscountsCalculator.Services;
 
-using System;
-using System.IO;
-
 public class FileReader(string fileName)
 {
     private string _fileName = fileName;

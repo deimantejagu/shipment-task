@@ -1,9 +1,8 @@
-namespace UnitTests;
-
-using System;
 using Xunit;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Services;
+
+namespace UnitTests;
 
 public class FileReaderTests
 {

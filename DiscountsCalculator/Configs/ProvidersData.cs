@@ -1,6 +1,6 @@
-namespace DiscountsCalculator.Configs;
-
 using DiscountsCalculator.Models;
+
+namespace DiscountsCalculator.Configs;
 
 public class ProvidersData
 {

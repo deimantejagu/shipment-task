@@ -1,7 +1,7 @@
-namespace DiscountsCalculator.Rules;
-
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Services;
+
+namespace DiscountsCalculator.Rules;
 
 public class MonthlyDiscountLimit()
 {

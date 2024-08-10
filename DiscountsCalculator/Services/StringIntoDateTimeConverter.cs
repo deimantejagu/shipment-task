@@ -1,7 +1,7 @@
-namespace DiscountsCalculator.Services;
-
 using DiscountsCalculator.Models;
 using System.Globalization;
+
+namespace DiscountsCalculator.Services;
 
 public class StringIntoDateTimeConverter()
 {

@@ -1,7 +1,7 @@
-namespace DiscountsCalculator.Services;
-
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Rules;
+
+namespace DiscountsCalculator.Services;
 
 public class TransactionsHandler(List<string> transactions)
 {

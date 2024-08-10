@@ -1,7 +1,7 @@
-namespace DiscountsCalculator.Services;
-
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Configs;
+
+namespace DiscountsCalculator.Services;
 
 public class PriceSetter()
 {

@@ -1,10 +1,10 @@
-namespace UnitTests;
-
 using Xunit;
 using DiscountsCalculator.Models;
 using DiscountsCalculator.Services;
 using DiscountsCalculator.Configs;
 using DiscountsCalculator.Rules;
+
+namespace UnitTests;
 
 public class RulesTests
 {
