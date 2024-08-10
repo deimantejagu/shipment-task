@@ -2,6 +2,9 @@
 
 A C# application for calculating discounts based on specific rules.
 
+## Requirements
+* .NET version - 8.0.303
+
 ## Features
 
 * Matches S shipments to the lowest available price.
