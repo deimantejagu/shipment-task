@@ -3,7 +3,7 @@ using DiscountsCalculator.Configs;
 
 namespace DiscountsCalculator.Services;
 
-public class ValidateData(string transaction)
+public class DataValidator(string transaction)
 {
     private FinancialTransaction? _transaction;
 

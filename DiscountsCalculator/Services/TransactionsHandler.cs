@@ -11,8 +11,8 @@ public class TransactionsHandler(List<string> transactions)
 
         foreach (string transactionString in transactions)
         {
-            ValidateData validateData = new(transactionString);
-            FinancialTransaction? transaction = validateData.Validate();
+            DataValidator dataValidator = new(transactionString);
+            FinancialTransaction? transaction = dataValidator.Validate();
 
             if (transaction != null)
             {
