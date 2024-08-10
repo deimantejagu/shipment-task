@@ -11,8 +11,9 @@ public class StringIntoDateTimeConverter()
         {
             return DateTime.ParseExact(transaction.CreatedAt, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         } 
-        catch
+        catch (FormatException e)
         {
+            Console.WriteLine($"Error parsing date: {e.Message}");
             throw;
         }
     }
