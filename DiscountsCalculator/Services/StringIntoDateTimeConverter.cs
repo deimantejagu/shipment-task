@@ -14,6 +14,7 @@ public class StringIntoDateTimeConverter()
         catch (FormatException e)
         {
             Console.WriteLine($"Error parsing date: {e.Message}");
+            
             throw;
         }
     }

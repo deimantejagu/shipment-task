@@ -20,6 +20,7 @@ public class FileReader(string fileName)
         catch (FileNotFoundException e)
         {
             Console.WriteLine($"Error reading file: {e.Message}");
+            
             throw;
         }
 
