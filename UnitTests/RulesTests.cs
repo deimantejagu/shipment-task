@@ -9,7 +9,7 @@ using DiscountsCalculator.Rules;
 public class RulesTests
 {
     [Fact]
-    public void CalculateDiscount_SizeS_SetsPriceToLowest()
+    public void ApplyDiscount_SizeS_SetsPriceToLowest()
     {
         // Arrange
         FinancialTransaction transaction = new FinancialTransaction("2020-07-20", "S", "MR") { Price = 10m };
@@ -24,14 +24,15 @@ public class RulesTests
     }
 
     [Fact]
-    public void CalculateDiscount_SetFreeShipping()
+    public void ApplyDiscount_SetFreeShipping()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m };
         List<FinancialTransaction> completedTransactions = [
             new FinancialTransaction("2020-07-20", "L", "LP") { Price = 6.90m },
             new FinancialTransaction("2020-07-21", "L", "LP") { Price = 6.90m },
         ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m };
+
 
         ThirdFreeShipment rule = new ThirdFreeShipment();
 
@@ -44,15 +45,15 @@ public class RulesTests
     }
 
     [Fact]
-    public void CalculateDiscount_NoFreeShipment()
+    public void ApplyDiscount_NoFreeShipment()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "L", "LP") { Price = 6.90m };
         List<FinancialTransaction> completedTransactions = [
             new FinancialTransaction("2020-07-20", "L", "LP") { Price = 6.90m },
             new FinancialTransaction("2020-07-21", "L", "LP") { Price = 6.90m },
             new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m },
         ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "L", "LP") { Price = 6.90m };
 
         ThirdFreeShipment rule = new ThirdFreeShipment();
 
@@ -65,15 +66,15 @@ public class RulesTests
     }
 
     [Fact]
-    public void CalculateDiscount_DiscountExceedsLimit()
+    public void ApplyDiscount_DiscountExceedsLimit()
     {
         // Arrange
-        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
         List<FinancialTransaction> completedTransactions = [
             new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
             new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
             new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
         ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
 
         MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
 
@@ -82,5 +83,89 @@ public class RulesTests
 
         // Assert
         Assert.Equal(0.1m, result.Discount);  
+    }
+
+    [Fact]
+    public void ApplyDiscount_FreeShipping_RandomDataIsInTheMiddleOfList()
+    {
+        // Arrange
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "S", "MR") { Price = 2m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Price = 6.90m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m  },
+            new FinancialTransaction("2021-01-01", "L", "LP") { Price = 6.90m },
+        ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "L", "LP") { Price = 6.90m };
+
+        ThirdFreeShipment rule = new ThirdFreeShipment();
+
+        // Act
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
+
+        // Assert
+        Assert.Equal(6.9m, result.Discount);
+        Assert.Equal(0, result.Price);
+    }
+
+    [Fact]
+    public void ApplyDiscount_MonthLimit_RandomDataIsInTheMiddleOfList()
+    {
+        // Arrange
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
+            new FinancialTransaction("2021-01-01", "S", "MR") { Discount = 2m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
+        ];
+        FinancialTransaction transaction = new FinancialTransaction("2020-07-23", "S", "LP") { Discount = 0.5m };
+
+        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
+
+        // Act
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
+
+        // Assert
+        Assert.Equal(0.1m, result.Discount);
+    }
+
+    [Fact]
+    public void ApplyDiscount_FreeShipping_SameMonthButDifferentYear()
+    {
+        // Arrange
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "S", "MR") { Price = 2m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Price = 6.90m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Price = 6.90m },
+        ];
+        FinancialTransaction transaction = new FinancialTransaction("2021-07-23", "L", "LP") { Price = 6.90m };
+
+        ThirdFreeShipment rule = new ThirdFreeShipment();
+
+        // Act
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
+
+        // Assert
+        Assert.Equal(0, result.Discount);
+        Assert.Equal(6.9m, result.Price);
+    }
+
+    [Fact]
+    public void ApplyDiscount_MonthLimit_SameMonthButDifferentYear()
+    {
+        // Arrange
+        List<FinancialTransaction> completedTransactions = [
+            new FinancialTransaction("2020-07-20", "L", "LP") { Discount = 6.90m },
+            new FinancialTransaction("2020-07-21", "L", "LP") { Discount = 2m },
+            new FinancialTransaction("2020-07-22", "L", "LP") { Discount = 1m },
+        ];
+        FinancialTransaction transaction = new FinancialTransaction("2021-07-23", "S", "LP") { Discount = 0.5m };
+
+        MonthlyDiscountLimit rule = new MonthlyDiscountLimit();
+
+        // Act
+        FinancialTransaction result = rule.Apply(transaction, completedTransactions);
+
+        // Assert
+        Assert.Equal(0.5m, result.Discount);
     }
 }
