@@ -1,25 +1,32 @@
 namespace DiscountsCalculator.Rules;
 
 using DiscountsCalculator.Models;
+using DiscountsCalculator.Services;
 
-public class MonthlyDiscountLimit(FinancialTransaction transaction, decimal monthlyDiscountSum)
+public class MonthlyDiscountLimit()
 {
     private const int MonthLimit = 10;
+    private decimal _monthlyDiscountSum = 0;
 
-    public decimal CalculateDiscount()
+    public FinancialTransaction Apply(FinancialTransaction transaction, List<FinancialTransaction> completedTransactions)
     {
-        if (Check())
+        if (Check(transaction, completedTransactions))
         {
-            transaction.Discount = transaction.Discount - monthlyDiscountSum + MonthLimit;
-
-            return transaction.Discount;
+            transaction.Discount = transaction.Discount - _monthlyDiscountSum + MonthLimit;
         }
 
-        return 0;
+        return transaction;
     }
 
-    private bool Check()
+    private bool Check(FinancialTransaction transaction, List<FinancialTransaction> completedTransactions)
     {
-        return monthlyDiscountSum > MonthLimit;
+        List<FinancialTransaction> previousMonthTransactions = completedTransactions
+            .Where(t => StringIntoDateTimeConverter.Convert(t).Year == StringIntoDateTimeConverter.Convert(transaction).Year &&
+                StringIntoDateTimeConverter.Convert(t).Month == StringIntoDateTimeConverter.Convert(transaction).Month)
+            .ToList();
+
+        _monthlyDiscountSum = previousMonthTransactions.Sum(t => t.Discount) + transaction.Discount;
+
+        return _monthlyDiscountSum > 10;
     }
 }

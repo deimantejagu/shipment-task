@@ -1,25 +1,24 @@
 using DiscountsCalculator.Configs;
 using DiscountsCalculator.Models;
-using DiscountsCalculator.Services;
 
 namespace DiscountsCalculator.Rules;
 
-public class MatchSmallestSizePrices(FinancialTransaction transaction)
+public class MatchSmallestSizePrices()
 {
     private decimal _minPrice = FindLowestProvidersPrice();
 
-    public decimal CalculateDiscount()
+    public FinancialTransaction Apply(FinancialTransaction transaction)
     {
-        if (Check())
+        if (Check(transaction))
         {
             transaction.Discount = transaction.Price - _minPrice;
             transaction.Price = _minPrice;
         }
 
-        return transaction.Discount;
+        return transaction;
     }
 
-    private bool Check()
+    private bool Check(FinancialTransaction transaction)
     {
         return transaction.Size == "S";
     }

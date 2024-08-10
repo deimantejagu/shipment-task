@@ -7,56 +7,36 @@ using DiscountsCalculator.Services;
 
 public class FileReaderTests
 {
-    private const string TestFilePath = "test.txt";
-
-    // [Fact]
-    // public void ReadValidFile_ReturnsCorrectTransactions()
-    // {
-    //     // Arrange
-    //     List<FinancialTransaction> expectedTransactions = new []
-    //     {
-    //         new FinancialTransaction(new DateTime(2023, 8, 5), "L", "LP"),
-    //         new FinancialTransaction(new DateTime(2023, 8, 4), "M", "MR")
-    //     };
-        
-    //     // Act
-    //     List<FinancialTransaction> actualTransactions = new FileReader(TestFilePath).GetTransactions();
-
-    //     // Assert
-    //     Assert.Equal(expectedTransactions, actualTransactions);
-    // }
-
     [Fact]
-    public void FileNotFound_ThrowsException(){
-        // Arrange
-        var fileReader = new FileReader("nonexistent.txt");
-
-        // Act and Assert
-        Assert.Throws<FileNotFoundException>(() => fileReader.GetTransactions());
-    }
-
-    [Fact]
-    public void ExtractsCorrectDataFromLine()
+    public void GetTransactions_ValidFile_ReturnsListOfLines()
     {
         // Arrange
-        var line = "2023-08-05 L LP";
+        const string fileName = "valid_transactions.txt"; 
+        var fileWriter = new StreamWriter(fileName); 
+        fileWriter.WriteLine("2023-08-08 S LP 10.00");
+        fileWriter.WriteLine("2023-08-09 M MR 5.00");
+        fileWriter.Close();
+        var reader = new FileReader(fileName);
 
         // Act
-        var transaction = FileReader.ParseTransactionLine(line);
+        var transactions = reader.GetTransactions();
 
         // Assert
-        Assert.Equal(new DateTime(2023, 8, 5), transaction.CreatedAt);
-        Assert.Equal("L", transaction.Size);
-        Assert.Equal("LP", transaction.Provider);
+        Assert.Equal(2, transactions.Count);
+        Assert.Equal("2023-08-08 S LP 10.00", transactions[0]);
+        Assert.Equal("2023-08-09 M MR 5.00", transactions[1]);
+
+        File.Delete(fileName);
     }
 
     [Fact]
-    public void ValidatesDateFormat()
+    public void GetTransactions_NonExistentFile_ThrowsFileNotFoundException()
     {
         // Arrange
-        var invalidLine = "invalid date L LP";
+        const string fileName = "non_existent_file.txt";
+        var reader = new FileReader(fileName);
 
-        // Act and Assert
-        Assert.Throws<FormatException>(() => FileReader.ParseTransactionLine(invalidLine));
+        // Act & Assert
+        Assert.Throws<FileNotFoundException>(() => reader.GetTransactions());
     }
 }
